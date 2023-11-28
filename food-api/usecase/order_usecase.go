@@ -56,6 +56,7 @@ func (ou *orderUsecase) NewOrder(c context.Context, dto dtos.OrderDTO) error {
 	for _, item := range dto.Items {
 		for _, product := range products {
 			if item.ProductID == product.ID {
+				//mapping order item
 				orderItem := domain.OrderItem{
 					ProductID:      product.ID,
 					ItemDiscountID: sql.NullInt64{},
@@ -78,9 +79,10 @@ func (ou *orderUsecase) NewOrder(c context.Context, dto dtos.OrderDTO) error {
 						} else if discount.ItemDiscount.Type == constant.PAIR_DISCOUNT_TYPE {
 							if orderItem.Quantity >= 2 {
 								//pair discount found
+								//get pair quantity
 								pairQuantity := float64(orderItem.Quantity / 2)
 
-								//pair
+								//apply pair discount
 								if discount.ItemDiscount.DiscountType == constant.PERCENTAGE_DISCOUNT_TYPE {
 									orderItem.TotalPrice = orderItem.TotalPrice - (math.Floor(pairQuantity) * ((orderItem.TotalPrice * discount.ItemDiscount.DiscountValue) / 100))
 								} else if discount.ItemDiscount.DiscountType == constant.PRICE_DISCOUNT_TYPE {
