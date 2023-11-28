@@ -30,4 +30,5 @@ type OrderUsecase interface {
 	NewOrder(c context.Context, order dtos.OrderDTO) (Order, error)
 	GetByID(c context.Context, orderID string) (Order, error)
 	CalculateOrder(order *Order, dto dtos.OrderDTO, products []Product)
+	ApplyMemberDiscount(ctx context.Context, order *Order, dto dtos.OrderDTO)
 }

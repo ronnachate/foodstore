@@ -16,6 +16,11 @@ type OrderUsecase struct {
 	mock.Mock
 }
 
+// ApplyMemberDiscount provides a mock function with given fields: ctx, order, dto
+func (_m *OrderUsecase) ApplyMemberDiscount(ctx context.Context, order *domain.Order, dto dtos.OrderDTO) {
+	_m.Called(ctx, order, dto)
+}
+
 // CalculateOrder provides a mock function with given fields: order, dto, products
 func (_m *OrderUsecase) CalculateOrder(order *domain.Order, dto dtos.OrderDTO, products []domain.Product) {
 	_m.Called(order, dto, products)

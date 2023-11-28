@@ -55,21 +55,8 @@ func (ou *orderUsecase) NewOrder(c context.Context, dto dtos.OrderDTO) (domain.O
 	//append order items
 	ou.CalculateOrder(&order, dto, products)
 
-	if dto.MemberID != uuid.Nil {
-		//find order discount
-		orderDiscount, err := ou.orderDiscountRepository.GetByType(ctx, constant.MEMBER_DISCOUNT_TYPE)
-		if err != nil {
-			//apply discount
-			discountAmount := 0.0
-			if orderDiscount.DiscountType == constant.PERCENTAGE_DISCOUNT_TYPE {
-				discountAmount = (order.TotalPrice * orderDiscount.DiscountValue) / 100
-			} else if orderDiscount.DiscountType == constant.PRICE_DISCOUNT_TYPE {
-				discountAmount = orderDiscount.DiscountValue
-			}
-			order.DiscountID.Int64 = int64(orderDiscount.ID)
-			order.TotalPrice = order.TotalPrice - discountAmount
-		}
-	}
+	//apply member discount
+	ou.ApplyMemberDiscount(c, &order, dto)
 
 	//create order
 	return ou.orderRepository.NewOrder(ctx, &order)
@@ -125,6 +112,26 @@ func (ou *orderUsecase) CalculateOrder(order *domain.Order, dto dtos.OrderDTO, p
 				order.Items = append(order.Items, orderItem)
 				order.TotalPrice += orderItem.TotalPrice
 			}
+		}
+	}
+}
+
+func (ou *orderUsecase) ApplyMemberDiscount(c context.Context, order *domain.Order, dto dtos.OrderDTO) {
+	ctx, cancel := context.WithTimeout(c, ou.contextTimeout)
+	defer cancel()
+	if dto.MemberID != uuid.Nil {
+		//find order discount
+		orderDiscount, err := ou.orderDiscountRepository.GetByType(ctx, constant.MEMBER_DISCOUNT_TYPE)
+		if err == nil {
+			//apply discount
+			discountAmount := 0.0
+			if orderDiscount.DiscountType == constant.PERCENTAGE_DISCOUNT_TYPE {
+				discountAmount = (order.TotalPrice * orderDiscount.DiscountValue) / 100
+			} else if orderDiscount.DiscountType == constant.PRICE_DISCOUNT_TYPE {
+				discountAmount = orderDiscount.DiscountValue
+			}
+			order.DiscountID.Int64 = int64(orderDiscount.ID)
+			order.TotalPrice = order.TotalPrice - discountAmount
 		}
 	}
 }

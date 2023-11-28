@@ -146,7 +146,7 @@ func TestCalculateOrder(t *testing.T) {
 
 	})
 
-	t.Run("success with item pair discount - percentage discount", func(t *testing.T) {
+	t.Run("success with item pair discount percentage discount", func(t *testing.T) {
 
 		u := usecase.NewOrderUsecase(mockOrderRepository, mockProductRepository, mockOrderDiscountRepository, time.Second*2)
 
@@ -178,7 +178,7 @@ func TestCalculateOrder(t *testing.T) {
 
 	})
 
-	t.Run("success with item pair discount - value discount", func(t *testing.T) {
+	t.Run("success with item pair discount value discount", func(t *testing.T) {
 
 		u := usecase.NewOrderUsecase(mockOrderRepository, mockProductRepository, mockOrderDiscountRepository, time.Second*2)
 
@@ -206,6 +206,86 @@ func TestCalculateOrder(t *testing.T) {
 		u.CalculateOrder(&order, orderRequest, mockProducts)
 		assert.NotNil(t, order)
 		assert.Equal(t, float64(380), order.TotalPrice)
+
+	})
+
+	t.Run("success with  no member discount value discount", func(t *testing.T) {
+
+		//member discount found
+		orderDiscount := domain.OrderDiscount{
+			ID: 1, Type: constant.MEMBER_DISCOUNT_TYPE, DiscountType: constant.PRICE_DISCOUNT_TYPE, DiscountValue: 10}
+		mockOrderDiscountRepository.On("GetByType", mock.Anything, mock.Anything).Return(orderDiscount, nil).Once()
+		u := usecase.NewOrderUsecase(mockOrderRepository, mockProductRepository, mockOrderDiscountRepository, time.Second*2)
+
+		//no member id
+		orderRequest := dtos.OrderDTO{
+			MemberID: uuid.Nil,
+			Items: []dtos.OrderItemDTO{
+				{ProductID: productID1, Quantity: 2},
+			},
+		}
+
+		order := domain.Order{
+			Items:      make([]domain.OrderItem, 0),
+			TotalPrice: 200,
+		}
+
+		u.ApplyMemberDiscount(context.Background(), &order, orderRequest)
+		assert.NotNil(t, order)
+		assert.Equal(t, float64(200), order.TotalPrice)
+
+	})
+
+	t.Run("success with member discount percentage discount", func(t *testing.T) {
+
+		orderDiscount := domain.OrderDiscount{
+			ID: 1, Type: constant.MEMBER_DISCOUNT_TYPE, DiscountType: constant.PERCENTAGE_DISCOUNT_TYPE, DiscountValue: 10}
+		mockOrderDiscountRepository.On("GetByType", mock.Anything, mock.Anything).Return(orderDiscount, nil).Once()
+		u := usecase.NewOrderUsecase(mockOrderRepository, mockProductRepository, mockOrderDiscountRepository, time.Second*2)
+
+		orderRequest := dtos.OrderDTO{
+			MemberID: uuid.New(),
+			Items: []dtos.OrderItemDTO{
+				{ProductID: productID1, Quantity: 2},
+			},
+		}
+
+		order := domain.Order{
+			Items:      make([]domain.OrderItem, 0),
+			TotalPrice: 200,
+		}
+
+		u.ApplyMemberDiscount(context.Background(), &order, orderRequest)
+		assert.NotNil(t, order)
+		// discount 10% from total price
+		assert.Equal(t, float64(180), order.TotalPrice)
+
+	})
+
+	t.Run("success with member discount - value discount", func(t *testing.T) {
+
+		orderDiscount := domain.OrderDiscount{
+			ID: 1, Type: constant.MEMBER_DISCOUNT_TYPE, DiscountType: constant.PRICE_DISCOUNT_TYPE, DiscountValue: 10}
+		mockOrderDiscountRepository.On("GetByType", mock.Anything, mock.Anything).Return(orderDiscount, nil).Once()
+		u := usecase.NewOrderUsecase(mockOrderRepository, mockProductRepository, mockOrderDiscountRepository, time.Second*2)
+
+		orderRequest := dtos.OrderDTO{
+			MemberID: uuid.New(),
+			Items: []dtos.OrderItemDTO{
+				{ProductID: productID1, Quantity: 2},
+			},
+		}
+
+		order := domain.Order{
+			Items:      make([]domain.OrderItem, 0),
+			TotalPrice: 200,
+		}
+
+		//1 pair discount
+		u.ApplyMemberDiscount(context.Background(), &order, orderRequest)
+		assert.NotNil(t, order)
+		// discount 10 from total price
+		assert.Equal(t, float64(190), order.TotalPrice)
 
 	})
 }
