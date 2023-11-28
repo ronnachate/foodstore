@@ -1,12 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Row from 'react-bootstrap/Row';
 
 import PictureGrid from './component/PictureGrid';
 
+import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
 function App() {
-  const [pictures, setPictures] = useState(PICTURE_DATA);
+  const [pictures, setPictures] = useState([]);
+  useEffect(() => {
+    PICTURE_DATA.map((picture) => {
+      picture.image_tags = TAG_DATA.filter((tag) =>
+        picture.tags ? picture.tags.includes(tag.id) : false
+      );
+    });
+    setPictures(PICTURE_DATA);
+  });
   return (
     <div className="App">
       <PictureGrid pictures={pictures} />
@@ -58,5 +67,28 @@ const PICTURE_DATA = [
     name: 'Grandenellakes',
     body: 'Grandenellakes is a large town situated besides a lake. It is known for its elaborate legends.',
     img_url: 'https://picsum.photos/id/200/800',
+  },
+];
+
+const TAG_DATA = [
+  {
+    id: 1,
+    name: 'Brinebeast',
+    type: 'Earth',
+  },
+  {
+    id: 2,
+    name: 'Goolu',
+    type: 'Air',
+  },
+  {
+    id: 3,
+    name: 'Macaronifeet',
+    type: 'Fire',
+  },
+  {
+    id: 4,
+    name: 'Wispclaw',
+    type: 'Water',
   },
 ];
