@@ -17,5 +17,5 @@ type Product struct {
 }
 
 type ProductRepository interface {
-	GetProducts(c context.Context, productIDs []int) ([]Product, error)
+	GetProducts(c context.Context, productIDs []uuid.UUID) ([]Product, error)
 }
