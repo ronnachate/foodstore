@@ -1,0 +1,8 @@
+package constant
+
+const PRICE_DISCOUNT_TYPE = 1
+const PERCENTAGE_DISCOUNT_TYPE = 2
+
+const MIN_DISCOUNT_TYPE = 1
+const PAIR_DISCOUNT_TYPE = 2
+const MEMBER_DISCOUNT_TYPE = 3
