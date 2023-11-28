@@ -98,18 +98,20 @@ func (ou *orderUsecase) NewOrder(c context.Context, dto dtos.OrderDTO) error {
 			}
 		}
 	}
-	//find order discount
-	orderDiscount, err := ou.orderDiscountRepository.GetByType(ctx, constant.MEMBER_DISCOUNT_TYPE)
-	if err != nil {
-		//apply discount
-		discountAmount := 0.0
-		if orderDiscount.DiscountType == constant.PERCENTAGE_DISCOUNT_TYPE {
-			discountAmount = (order.TotalPrice * orderDiscount.DiscountValue) / 100
-		} else if orderDiscount.DiscountType == constant.PRICE_DISCOUNT_TYPE {
-			discountAmount = orderDiscount.DiscountValue
+	if dto.MemberID != uuid.Nil {
+		//find order discount
+		orderDiscount, err := ou.orderDiscountRepository.GetByType(ctx, constant.MEMBER_DISCOUNT_TYPE)
+		if err != nil {
+			//apply discount
+			discountAmount := 0.0
+			if orderDiscount.DiscountType == constant.PERCENTAGE_DISCOUNT_TYPE {
+				discountAmount = (order.TotalPrice * orderDiscount.DiscountValue) / 100
+			} else if orderDiscount.DiscountType == constant.PRICE_DISCOUNT_TYPE {
+				discountAmount = orderDiscount.DiscountValue
+			}
+			order.DiscountID.Int64 = int64(orderDiscount.ID)
+			order.TotalPrice = order.TotalPrice - discountAmount
 		}
-		order.DiscountID.Int64 = int64(orderDiscount.ID)
-		order.TotalPrice = order.TotalPrice - discountAmount
 	}
 
 	//create order
