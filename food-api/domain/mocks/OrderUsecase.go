@@ -16,6 +16,11 @@ type OrderUsecase struct {
 	mock.Mock
 }
 
+// CalculateOrder provides a mock function with given fields: order, dto, products
+func (_m *OrderUsecase) CalculateOrder(order *domain.Order, dto dtos.OrderDTO, products []domain.Product) {
+	_m.Called(order, dto, products)
+}
+
 // GetByID provides a mock function with given fields: c, orderID
 func (_m *OrderUsecase) GetByID(c context.Context, orderID string) (domain.Order, error) {
 	ret := _m.Called(c, orderID)
@@ -41,17 +46,27 @@ func (_m *OrderUsecase) GetByID(c context.Context, orderID string) (domain.Order
 }
 
 // NewOrder provides a mock function with given fields: c, order
-func (_m *OrderUsecase) NewOrder(c context.Context, order dtos.OrderDTO) error {
+func (_m *OrderUsecase) NewOrder(c context.Context, order dtos.OrderDTO) (domain.Order, error) {
 	ret := _m.Called(c, order)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, dtos.OrderDTO) error); ok {
+	var r0 domain.Order
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, dtos.OrderDTO) (domain.Order, error)); ok {
+		return rf(c, order)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, dtos.OrderDTO) domain.Order); ok {
 		r0 = rf(c, order)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(domain.Order)
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, dtos.OrderDTO) error); ok {
+		r1 = rf(c, order)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // NewOrderUsecase creates a new instance of OrderUsecase. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

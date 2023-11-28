@@ -17,12 +17,12 @@ func NewOrderRepository(db *gorm.DB) domain.OrderRepository {
 	}
 }
 
-func (or *orderRepository) NewOrder(c context.Context, order *domain.Order) error {
-	result := or.DB.Create(order)
+func (or *orderRepository) NewOrder(c context.Context, order *domain.Order) (domain.Order, error) {
+	result := or.DB.Create(&order)
 	if result.Error != nil {
-		return result.Error
+		return domain.Order{}, result.Error
 	}
-	return nil
+	return *order, nil
 }
 
 func (or *orderRepository) GetByID(c context.Context, id string) (domain.Order, error) {

@@ -56,7 +56,7 @@ func (s *OrderTestSuite) Test_repository_NewOrder() {
 		s.mock.ExpectExec("INSERT INTO \"orders\" (.+) VALUES (.+)").WillReturnError(sql.ErrNoRows)
 		s.mock.ExpectRollback()
 		var reqOrder domain.Order
-		err := s.repository.NewOrder(context.Background(), &reqOrder)
+		_, err := s.repository.NewOrder(context.Background(), &reqOrder)
 		assert.Error(t, err)
 	})
 }

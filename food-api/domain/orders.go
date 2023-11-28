@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	domain "github.com/ronnachate/foodstore/food-api/domain/dtos"
+	dtos "github.com/ronnachate/foodstore/food-api/domain/dtos"
 )
 
 type Order struct {
@@ -22,11 +22,12 @@ type Order struct {
 }
 
 type OrderRepository interface {
-	NewOrder(c context.Context, order *Order) error
+	NewOrder(c context.Context, order *Order) (Order, error)
 	GetByID(c context.Context, id string) (Order, error)
 }
 
 type OrderUsecase interface {
-	NewOrder(c context.Context, order domain.OrderDTO) error
+	NewOrder(c context.Context, order dtos.OrderDTO) (Order, error)
 	GetByID(c context.Context, orderID string) (Order, error)
+	CalculateOrder(order *Order, dto dtos.OrderDTO, products []Product)
 }
