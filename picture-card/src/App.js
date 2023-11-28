@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import Row from 'react-bootstrap/Row';
 
-import PictureGrid from './component/PictureGrid';
+import PictureGrid from './components/PictureGrid';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
