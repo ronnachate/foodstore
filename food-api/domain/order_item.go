@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,7 +15,7 @@ type OrderItem struct {
 	Product        Product `gorm:"foreignKey:ProductID;references:ID"`
 	Quantity       uint64
 	Price          float64
-	ItemDiscountID uint64
+	ItemDiscountID sql.NullInt64
 	ItemDiscount   ItemDiscount `gorm:"foreignKey:ItemDiscountID;references:ID"`
 	TotalPrice     float64
 	CreatedAt      time.Time `gorm:"autoCreateTime"`
