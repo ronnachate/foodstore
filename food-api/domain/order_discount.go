@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"time"
 )
 
@@ -13,4 +14,8 @@ type OrderDiscount struct {
 	DiscountValue float64   `gorm:"not null"`
 	CreatedAt     time.Time `gorm:"autoCreateTime"`
 	UpdatedAt     time.Time `gorm:"autoUpdateTime"`
+}
+
+type OrderDiscountRepository interface {
+	GetByType(c context.Context, id uint64) (OrderDiscount, error)
 }
