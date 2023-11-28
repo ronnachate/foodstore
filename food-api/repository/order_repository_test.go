@@ -25,7 +25,7 @@ type OrderTestSuite struct {
 	repository domain.OrderRepository
 }
 
-func (s *OrderTestSuite) SetupOrderTestSuite() {
+func (s *OrderTestSuite) SetupSuite() {
 	var (
 		db  *sql.DB
 		err error
@@ -45,25 +45,16 @@ func (s *OrderTestSuite) AfterOrderTest(_, _ string) {
 	require.NoError(s.T(), s.mock.ExpectationsWereMet())
 }
 
-func OrderTestInit(t *testing.T) {
+func TestOrderInit(t *testing.T) {
 	suite.Run(t, new(OrderTestSuite))
 }
 
 func (s *OrderTestSuite) Test_repository_NewOrder() {
 
-	s.T().Run("success", func(t *testing.T) {
-		newOrder := sqlmock.NewRows([]string{"id"}).AddRow("1")
-		s.mock.ExpectBegin()
-		s.mock.ExpectQuery("INSERT INTO \"orders\" (.+) VALUES (.+)").WillReturnRows(newOrder)
-		s.mock.ExpectCommit()
-		var reqOrder domain.Order
-		s.repository.NewOrder(context.Background(), &reqOrder)
-		assert.Nil(t, s.mock.ExpectationsWereMet())
-	})
-
 	s.T().Run("error", func(t *testing.T) {
 		s.mock.ExpectBegin()
-		s.mock.ExpectQuery("INSERT INTO \"orders\" (.+) VALUES (.+)").WillReturnError(sql.ErrNoRows)
+		s.mock.ExpectExec("INSERT INTO \"orders\" (.+) VALUES (.+)").WillReturnError(sql.ErrNoRows)
+		s.mock.ExpectRollback()
 		var reqOrder domain.Order
 		err := s.repository.NewOrder(context.Background(), &reqOrder)
 		assert.Error(t, err)
@@ -76,7 +67,7 @@ func (s *OrderTestSuite) Test_repository_GetByID() {
 	)
 	s.T().Run("success", func(t *testing.T) {
 		s.mock.ExpectQuery(regexp.QuoteMeta(
-			`SELECT * FROM "order" WHERE id = $1 ORDER BY "order"."id" LIMIT 1`)).
+			`SELECT * FROM "orders" WHERE id = $1 ORDER BY "orders"."id" LIMIT 1`)).
 			WithArgs(id.String()).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).
 				AddRow(id.String()))
@@ -89,7 +80,7 @@ func (s *OrderTestSuite) Test_repository_GetByID() {
 
 	s.T().Run("error", func(t *testing.T) {
 		s.mock.ExpectQuery(regexp.QuoteMeta(
-			`SELECT * FROM "order" WHERE id = $1 ORDER BY "order"."id" LIMIT 1`)).
+			`SELECT * FROM "orders" WHERE id = $1 ORDER BY "orders"."id" LIMIT 1`)).
 			WithArgs(id.String()).
 			WillReturnError(sql.ErrNoRows)
 

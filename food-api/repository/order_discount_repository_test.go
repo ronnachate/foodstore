@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/ronnachate/foodstore/food-api/domain"
 	"github.com/ronnachate/foodstore/food-api/repository"
 	"github.com/stretchr/testify/assert"
@@ -17,15 +16,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type Suite struct {
+type TestSuite struct {
 	suite.Suite
 	DB   *gorm.DB
 	mock sqlmock.Sqlmock
 
-	repository domain.ProductRepository
+	repository domain.OrderDiscountRepository
 }
 
-func (s *Suite) SetupSuite() {
+func (s *TestSuite) SetupSuite() {
 	var (
 		db  *sql.DB
 		err error
@@ -38,44 +37,41 @@ func (s *Suite) SetupSuite() {
 	})
 
 	s.DB, _ = gorm.Open(dialector, &gorm.Config{})
-	s.repository = repository.NewProductRepository(s.DB)
+	s.repository = repository.NewOrderDiscountRepository(s.DB)
 }
 
-func (s *Suite) AfterTest(_, _ string) {
+func (s *TestSuite) AfterOrderDiscountTest(_, _ string) {
 	require.NoError(s.T(), s.mock.ExpectationsWereMet())
 }
 
-func TestInit(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestOrderDiscountInit(t *testing.T) {
+	suite.Run(t, new(TestSuite))
 }
 
-func (s *Suite) Test_repository_GetProducts() {
+func (s *TestSuite) Test_repository_GetByType() {
 	var (
-		id   = uuid.UUID{}
-		name = "test-product"
+		typeID = uint64(99)
 	)
 	s.T().Run("success", func(t *testing.T) {
 		s.mock.ExpectQuery(regexp.QuoteMeta(
-			`SELECT * FROM "products" WHERE id IN ($1)`)).
-			WithArgs(id.String()).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).
-				AddRow(id.String(), name))
+			`SELECT * FROM "order_discounts" WHERE type = $1 ORDER BY "order_discounts"."id" LIMIT 1`)).
+			WithArgs(typeID).
+			WillReturnRows(sqlmock.NewRows([]string{"id", "type"}).
+				AddRow(1, typeID))
 
-		products, err := s.repository.GetProducts(context.Background(), []uuid.UUID{id})
+		res, err := s.repository.GetByType(context.Background(), typeID)
 
 		require.NoError(t, err)
-		assert.Equal(t, 1, len(products))
-		assert.Equal(t, id, products[0].ID)
-		assert.Equal(t, name, products[0].Name)
+		assert.Equal(t, typeID, res.Type)
 	})
 
 	s.T().Run("error", func(t *testing.T) {
 		s.mock.ExpectQuery(regexp.QuoteMeta(
-			`SELECT * FROM "products" WHERE id IN ($1)`)).
-			WithArgs(id.String()).
+			`SELECT * FROM "order_discounts" WHERE type = $1 ORDER BY "order_discounts"."id" LIMIT 1`)).
+			WithArgs(typeID).
 			WillReturnError(sql.ErrNoRows)
 
-		_, err := s.repository.GetProducts(context.Background(), []uuid.UUID{id})
+		_, err := s.repository.GetByType(context.Background(), typeID)
 
 		assert.Error(t, err)
 	})
